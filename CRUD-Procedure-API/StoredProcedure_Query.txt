@@ -1,0 +1,49 @@
+--Get the Employee List
+CREATE PROCEDURE GetEmployeeList
+AS
+BEGIN
+	SELECT EmployeeId, EmployeeName, EmployeeEmail, Password, Address, LastUpdate
+	FROM Employee
+END;
+
+
+--Create Employee
+CREATE PROCEDURE CreateEmployee
+    @EmployeeName NVARCHAR(50),
+    @EmployeeEmail NVARCHAR(50),
+    @Password NVARCHAR(50),
+    @Address NVARCHAR(50),
+    @LastUpdate DATETIME
+AS
+    BEGIN
+        INSERT INTO Employee (EmployeeName, EmployeeEmail, Password, Address, LastUpdate)
+        VALUES (@EmployeeName, @EmployeeEmail, @Password, @Address, @LastUpdate)
+END;
+
+
+--Update Employee
+CREATE PROCEDURE UpdateEmployee
+	@EmployeeId INT,
+	@EmployeeName NVARCHAR(50),
+	@EmployeeEmail NVARCHAR(50),
+	@Password NVARCHAR(50),
+	@Address NVARCHAR(50)
+AS
+	BEGIN
+	UPDATE Employee
+	SET EmployeeEmail = @EmployeeEmail,
+		EmployeeName = @EmployeeName,
+		Password = @Password,
+		Address = @Address
+	WHERE EmployeeId = @EmployeeId;
+END;
+
+
+--Delete Employee
+CREATE PROCEDURE DeleteEmployee
+	@EmployeeId INT
+AS
+	BEGIN
+		DELETE FROM Employee
+		WHERE EmployeeId = @EmployeeId
+END;

@@ -80,16 +80,106 @@ namespace CRUD_Procedure_API.Controllers
                     {
                         Status = 200,
                         Message = "Employee registered successfully",
-                        Data = employee
+                        Data = new
+                        {
+                            employee.EmployeeId,
+                            employee.EmployeeName,
+                            employee.EmployeeEmail,
+                            employee.Password,
+                            employee.Address
+                        }
                     };
                     return Created("", response);
                 }
                 return BadRequest(ModelState);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 var errorResponse = _errorResponseService.CreateErrorResponse(500, "Internal Server Error");
                 return StatusCode(500, errorResponse);
+            }
+        }
+
+        //POST: Update Employee
+        [HttpPost("update")]
+        public async Task<ActionResult> UpdateEmployee(int employeeId, [FromBody] Employee employee)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var existEmployee = await _context.Employee.FindAsync(employeeId);
+
+                    if (existEmployee == null)
+                    {
+                        var errorResponse = _errorResponseService.CreateErrorResponse(404, "No employee found");
+                        return BadRequest(errorResponse);
+                    }
+
+                    await _context.Database.ExecuteSqlRawAsync(
+                          "EXEC UpdateEmployee @EmployeeId, @EmployeeName, @EmployeeEmail, @Password, @Address",
+                            new SqlParameter("@EmployeeId", employeeId),
+                            new SqlParameter("@EmployeeName", employee.EmployeeName),
+                            new SqlParameter("@EmployeeEmail", employee.EmployeeEmail),
+                            new SqlParameter("@Password", employee.Password),
+                            new SqlParameter("@Address", employee.Address)
+                    );
+
+                    var response = new
+                    {
+                        Status = 200,
+                        Message = "Employee updated successfully",
+                        Data = new
+                        {
+                            employeeId,
+                            employee.EmployeeName,
+                            employee.EmployeeEmail,
+                            employee.Password,
+                            employee.Address
+                        }
+                    };
+                    return Created("", response);
+                }
+                return BadRequest(ModelState);
+            }
+            catch (Exception)
+            {
+                var errorResponse = _errorResponseService.CreateErrorResponse(500, "Internal Server Error");
+                return BadRequest(errorResponse);
+            }
+        }
+
+        //POST: Delete Employee
+        [HttpPost("delete")]
+        public async Task<ActionResult> DeleteEmployee(int employeeId)
+        {
+            try
+            {
+                var existEmployee = await _context.Employee.FindAsync(employeeId);
+                if (existEmployee == null)
+                {
+                    var errorResponse = _errorResponseService.CreateErrorResponse(400, "Employee not found");
+                    return BadRequest(errorResponse);
+                }
+
+                await _context.Database.ExecuteSqlRawAsync(
+                        "EXEC DeleteEmployee @EmployeeId",
+                        new SqlParameter("@EmployeeId", employeeId)
+                    );
+
+
+                var response = new
+                {
+                    Status = 200,
+                    Message = "Employee deleted successfully",
+                    Data = existEmployee
+                };
+                return Created("", response);
+            }
+            catch (Exception)
+            {
+                var errorResponse = _errorResponseService.CreateErrorResponse(500, "Internal Server Error");
+                return BadRequest(errorResponse);
             }
         }
 
